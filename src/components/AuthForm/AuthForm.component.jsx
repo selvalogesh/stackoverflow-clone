@@ -1,33 +1,41 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment} from 'react';
 import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import {login} from '../../redux/auth/auth.actions';
 import {register} from '../../redux/auth/auth.actions';
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 
 import {ReactComponent as Logo} from '../../assets/LogoGlyphMd.svg';
 
 import './AuthForm.styles.scss';
 
 const AuthForm = ({register, login, action}) => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
+
+  const validationSchema = Yup.object({
+    username: Yup.string().email("Enter valid email.").required("Required."),
+    password: Yup.string().required("Required."),
   });
 
-  const {username, password} = formData;
-
-  const onChange = (e) =>
-    setFormData({...formData, [e.target.name]: e.target.value});
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async ({username, password}) => {
+    alert(JSON.stringify({username, password}, null, 2));
     if (action === 'Sign up') {
       register({username, password});
     } else {
       login({username, password});
     }
   };
+
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    onSubmit: onSubmit,
+    validationSchema: validationSchema,
+  });
+
 
   const signUpLink = (
     <Fragment>
@@ -54,7 +62,7 @@ const AuthForm = ({register, login, action}) => {
           <Logo className='icon' />
         </div>
         <div className='form-container'>
-          <form className='login-form' onSubmit={(e) => onSubmit(e)}>
+          <form className='login-form' onSubmit={formik.handleSubmit}>
             <div>
               <label className='form-label s-label fc-black-600'>
                 Username
@@ -63,11 +71,12 @@ const AuthForm = ({register, login, action}) => {
                 className='form-input s-input'
                 type='text'
                 name='username'
-                value={username}
-                onChange={(e) => onChange(e)}
+                onChange={formik.handleChange}
+                value={formik.values.username}
                 id='username'
                 required
               />
+              {formik.errors.username ? (<div className='fs-caption fc-black-500'>{formik.errors.username}</div>) : null}
             </div>
             <div>
               <label className='form-label s-label fc-black-600'>
@@ -77,17 +86,19 @@ const AuthForm = ({register, login, action}) => {
                 className='form-input s-input'
                 type='password'
                 name='password'
-                value={password}
-                onChange={(e) => onChange(e)}
+                onChange={formik.handleChange}
+                value={formik.values.password}
                 id='password'
                 required
               />
+              {formik.errors.password ? <div className='fs-caption fc-black-500'>{formik.errors.password}</div> : null}
             </div>
             <div className='grid gs4 gsy fd-column js-auth-item '>
               <button
                 className='s-btn s-btn__primary'
                 id='submit-button'
                 name='submit-button'
+                disabled={!(formik.isValid && formik.dirty)}
               >
                 {action}
               </button>

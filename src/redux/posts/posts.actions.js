@@ -2,12 +2,8 @@ import axios from 'axios';
 import {setAlert} from '../alert/alert.actions';
 import {
   GET_POSTS,
-  GET_POST,
   GET_TOP_POSTS,
-  GET_TAG_POSTS,
   POST_ERROR,
-  DELETE_POST,
-  ADD_POST,
 } from './posts.types';
 
 // Get posts
@@ -30,32 +26,13 @@ export const getPosts = () => async (dispatch) => {
   }
 };
 
-// Get post
-export const getPost = (id) => async (dispatch) => {
-  try {
-    const res = await axios.get(`/api/posts/${id}`);
-
-    dispatch({
-      type: GET_POST,
-      payload: res.data.data,
-    });
-  } catch (err) {
-    dispatch(setAlert(err.response.data.message, 'danger'));
-
-    dispatch({
-      type: POST_ERROR,
-      payload: {msg: err.response.statusText, status: err.response.status},
-    });
-  }
-};
-
 //GET TOP POSTS
 export const getTopPosts = () => async (dispatch) => {
   try {
     const res = await axios.get('https://api.stackexchange.com/2.3/questions/featured?pagesize=10&site=stackoverflow');
 
     dispatch({
-      type: GET_POSTS,
+      type: GET_TOP_POSTS,
       payload: res.data.items,
     });
   } catch (err) {
@@ -64,75 +41,6 @@ export const getTopPosts = () => async (dispatch) => {
     dispatch({
       type: POST_ERROR,
       payload: {msg: err.response.data.error_message, status: err.response.status},
-    });
-  }
-};
-
-//GET TAG POSTS
-export const getTagPosts = (tagName) => async (dispatch) => {
-  try {
-    const res = await axios.get(`/api/posts/tag/${tagName}`);
-
-    dispatch({
-      type: GET_TAG_POSTS,
-      payload: res.data.data,
-    });
-  } catch (err) {
-    dispatch(setAlert(err.response.data.message, 'danger'));
-
-    dispatch({
-      type: POST_ERROR,
-      payload: {msg: err.response.statusText, status: err.response.status},
-    });
-  }
-};
-
-// Add post
-export const addPost = (formData) => async (dispatch) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  try {
-    const res = await axios.post('/api/posts', formData, config);
-
-    dispatch({
-      type: ADD_POST,
-      payload: res.data.data,
-    });
-
-    dispatch(setAlert(res.data.message, 'success'));
-
-    dispatch(getPosts());
-  } catch (err) {
-    dispatch(setAlert(err.response.data.message, 'danger'));
-
-    dispatch({
-      type: POST_ERROR,
-      payload: {msg: err.response.statusText, status: err.response.status},
-    });
-  }
-};
-
-// Delete post
-export const deletePost = (id) => async (dispatch) => {
-  try {
-    const res = await axios.delete(`/api/posts/${id}`);
-
-    dispatch({
-      type: DELETE_POST,
-      payload: id,
-    });
-
-    dispatch(setAlert(res.data.message, 'success'));
-  } catch (err) {
-    dispatch(setAlert(err.response.data.message, 'danger'));
-
-    dispatch({
-      type: POST_ERROR,
-      payload: {msg: err.response.statusText, status: err.response.status},
     });
   }
 };
